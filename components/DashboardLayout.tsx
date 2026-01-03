@@ -28,6 +28,7 @@ import {
   X,
   DollarSign,
   ShoppingBag,
+  Ticket,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { database } from '@/lib/database';
@@ -227,6 +228,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     <User className="w-4 h-4 mr-2" />
                     My Profile
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/coupons')}>
+                    <Ticket className="w-4 h-4 mr-2" />
+                    My Coupons
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push('/reviews')}>
                     <User className="w-4 h-4 mr-2" />
                     Reviews
@@ -309,6 +314,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               >
                 <User className="w-4 h-4 mr-2" />
                 My Profile
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => {
+                  router.push('/coupons');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <Ticket className="w-4 h-4 mr-2" />
+                My Coupons
               </Button>
               <Button
                 variant="ghost"
