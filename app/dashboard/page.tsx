@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Calendar, MessageCircle, PawPrint, Star, TrendingUp, Users } from 'lucide-react';
+import { database } from '@/lib/database';
 
 export default function DashboardPage() {
   return (
@@ -19,6 +21,145 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const { profile } = useAuth();
+  const [stats, setStats] = useState({
+    activeBookings: 0,
+    petsCount: 0,
+    unreadMessages: 0,
+    averageRating: null as number | null,
+    pendingRequests: 0,
+    upcomingBookings: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  const fetchDashboardStats = useCallback(async () => {
+    if (!profile?.id) return;
+
+    try {
+      setLoading(true);
+
+      const newStats = {
+        activeBookings: 0,
+        petsCount: 0,
+        unreadMessages: 0,
+        averageRating: null as number | null,
+        pendingRequests: 0,
+        upcomingBookings: 0,
+      };
+
+      // Fetch active bookings (confirmed or in_progress)
+      const activeStatuses = ['confirmed', 'in_progress'];
+      
+      if (profile.is_owner && profile.is_host) {
+        // If both, count bookings where user is either owner or host
+        const [ownerBookings, hostBookings] = await Promise.all([
+          database
+            .from('bookings')
+            .select('id')
+            .in('status', activeStatuses)
+            .eq('owner_id', profile.id),
+          database
+            .from('bookings')
+            .select('id')
+            .in('status', activeStatuses)
+            .eq('host_id', profile.id),
+        ]);
+        const uniqueBookings = new Set([
+          ...(ownerBookings.data?.map(b => b.id) || []),
+          ...(hostBookings.data?.map(b => b.id) || []),
+        ]);
+        newStats.activeBookings = uniqueBookings.size;
+      } else if (profile.is_owner) {
+        const { data } = await database
+          .from('bookings')
+          .select('id')
+          .in('status', activeStatuses)
+          .eq('owner_id', profile.id);
+        newStats.activeBookings = data?.length || 0;
+      } else if (profile.is_host) {
+        const { data } = await database
+          .from('bookings')
+          .select('id')
+          .in('status', activeStatuses)
+          .eq('host_id', profile.id);
+        newStats.activeBookings = data?.length || 0;
+      }
+
+      // Fetch pets count (only for owners)
+      if (profile.is_owner) {
+        const { data, error } = await database
+          .from('pets')
+          .select('id')
+          .eq('owner_id', profile.id);
+
+        if (!error) {
+          newStats.petsCount = data?.length || 0;
+        }
+      }
+
+      // Fetch unread messages
+      const { data: messages, error: messagesError } = await database
+        .from('messages')
+        .select('id')
+        .eq('receiver_id', profile.id)
+        .is('read_at', null);
+
+      if (!messagesError) {
+        newStats.unreadMessages = messages?.length || 0;
+      }
+
+      // Fetch average rating (only for hosts)
+      if (profile.is_host) {
+        const { data: reviews, error: reviewsError } = await database
+          .from('reviews')
+          .select('rating')
+          .eq('reviewee_id', profile.id);
+
+        if (!reviewsError && reviews && reviews.length > 0) {
+          const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+          newStats.averageRating = Number((totalRating / reviews.length).toFixed(1));
+        }
+      }
+
+      // Fetch pending requests and upcoming bookings (only for hosts)
+      if (profile.is_host) {
+        // Pending requests (status = 'requested')
+        const { data: pending, error: pendingError } = await database
+          .from('bookings')
+          .select('id')
+          .eq('host_id', profile.id)
+          .eq('status', 'requested');
+
+        if (!pendingError) {
+          newStats.pendingRequests = pending?.length || 0;
+        }
+
+        // Upcoming bookings (confirmed or accepted, check_in_date in future)
+        const today = new Date().toISOString().split('T')[0];
+        const { data: upcoming, error: upcomingError } = await database
+          .from('bookings')
+          .select('id')
+          .eq('host_id', profile.id)
+          .in('status', ['accepted', 'confirmed'])
+          .gte('check_in_date', today);
+
+        if (!upcomingError) {
+          newStats.upcomingBookings = upcoming?.length || 0;
+        }
+      }
+
+      setStats(newStats);
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [profile?.id, profile?.is_owner, profile?.is_host]);
+
+  useEffect(() => {
+    if (profile?.id) {
+      fetchDashboardStats();
+    }
+  }, [profile?.id, fetchDashboardStats]);
 
   return (
     <DashboardLayout>
@@ -61,8 +202,16 @@ function DashboardContent() {
               <Calendar className="w-4 h-4 text-gray-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-gray-500 mt-1">No active bookings</p>
+              {loading ? (
+                <div className="text-2xl font-bold">...</div>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold">{stats.activeBookings}</div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {stats.activeBookings === 0 ? 'No active bookings' : `${stats.activeBookings} active ${stats.activeBookings === 1 ? 'booking' : 'bookings'}`}
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -73,12 +222,26 @@ function DashboardContent() {
                 <PawPrint className="w-4 h-4 text-gray-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">0</div>
-                <Link href="/pets">
-                  <Button variant="link" className="text-orange-500 px-0 mt-1">
-                    Add your first pet
-                  </Button>
-                </Link>
+                {loading ? (
+                  <div className="text-2xl font-bold">...</div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold">{stats.petsCount}</div>
+                    {stats.petsCount === 0 ? (
+                      <Link href="/pets">
+                        <Button variant="link" className="text-orange-500 px-0 mt-1">
+                          Add your first pet
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link href="/pets">
+                        <Button variant="link" className="text-orange-500 px-0 mt-1">
+                          View all pets
+                        </Button>
+                      </Link>
+                    )}
+                  </>
+                )}
               </CardContent>
             </Card>
           )}
@@ -89,8 +252,16 @@ function DashboardContent() {
               <MessageCircle className="w-4 h-4 text-gray-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-gray-500 mt-1">All caught up!</p>
+              {loading ? (
+                <div className="text-2xl font-bold">...</div>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold">{stats.unreadMessages}</div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {stats.unreadMessages === 0 ? 'All caught up!' : `${stats.unreadMessages} unread ${stats.unreadMessages === 1 ? 'message' : 'messages'}`}
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -101,8 +272,18 @@ function DashboardContent() {
                 <Star className="w-4 h-4 text-gray-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">--</div>
-                <p className="text-xs text-gray-500 mt-1">No reviews yet</p>
+                {loading ? (
+                  <div className="text-2xl font-bold">...</div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold">
+                      {stats.averageRating !== null ? stats.averageRating : '--'}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {stats.averageRating !== null ? 'Based on reviews' : 'No reviews yet'}
+                    </p>
+                  </>
+                )}
               </CardContent>
             </Card>
           )}
@@ -163,17 +344,25 @@ function DashboardContent() {
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <p className="font-medium">Pending Requests</p>
-                    <p className="text-sm text-gray-500">0 requests awaiting response</p>
+                    <p className="text-sm text-gray-500">
+                      {loading ? 'Loading...' : `${stats.pendingRequests} ${stats.pendingRequests === 1 ? 'request' : 'requests'} awaiting response`}
+                    </p>
                   </div>
-                  <Badge variant="secondary">0</Badge>
+                  <Badge variant="secondary">
+                    {loading ? '...' : stats.pendingRequests}
+                  </Badge>
                 </div>
 
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <p className="font-medium">Upcoming Bookings</p>
-                    <p className="text-sm text-gray-500">Pets arriving soon</p>
+                    <p className="text-sm text-gray-500">
+                      {loading ? 'Loading...' : stats.upcomingBookings === 0 ? 'No upcoming bookings' : 'Pets arriving soon'}
+                    </p>
                   </div>
-                  <Badge variant="secondary">0</Badge>
+                  <Badge variant="secondary">
+                    {loading ? '...' : stats.upcomingBookings}
+                  </Badge>
                 </div>
 
                 <Link href="/availability">
