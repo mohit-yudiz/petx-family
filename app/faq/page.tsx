@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 export default function FAQPage() {
   const faqs = [
@@ -40,21 +41,8 @@ export default function FAQPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <Image src="/icon.png" alt="PetXfamily" width={40} height={40} className="w-10 h-10" />
-              <span className="text-2xl font-bold text-gray-900">PetXfamily</span>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <Link href="/"><Button variant="ghost">Home</Button></Link>
-              <Link href="/login"><Button variant="outline">Sign In</Button></Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col">
+      <Header />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
@@ -89,6 +77,7 @@ export default function FAQPage() {
           </Link>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

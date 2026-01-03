@@ -7,6 +7,8 @@ import * as z from 'zod';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -114,7 +116,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col">
+      <Header />
+      <div className="flex-1 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
@@ -179,6 +183,7 @@ export default function LoginPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
       </div>
 
       <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
@@ -267,6 +272,7 @@ export default function LoginPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <Footer />
     </div>
   );
 }
