@@ -1,6 +1,6 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { PawPrint } from 'lucide-react';
 
 export default function PrivacyPage() {
   return (
@@ -9,10 +9,8 @@ export default function PrivacyPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                <PawPrint className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-900">PetStay</span>
+              <Image src="/icon.png" alt="PetXfamily" width={40} height={40} className="w-10 h-10" />
+              <span className="text-2xl font-bold text-gray-900">PetXfamily</span>
             </Link>
             <div className="flex items-center space-x-4">
               <Link href="/"><Button variant="ghost">Home</Button></Link>
@@ -87,7 +85,7 @@ export default function PrivacyPage() {
 
           <h2>7. Children's Privacy</h2>
           <p>
-            PetStay is not intended for users under 18 years of age. We do not knowingly collect
+            PetXfamily is not intended for users under 18 years of age. We do not knowingly collect
             information from children.
           </p>
 

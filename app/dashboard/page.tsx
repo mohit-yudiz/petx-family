@@ -112,7 +112,7 @@ function DashboardContent() {
           <Card>
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Get started with PetStay</CardDescription>
+              <CardDescription>Get started with PetXfamily</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
