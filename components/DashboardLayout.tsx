@@ -51,10 +51,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { name: 'Stores', href: '/services', icon: ShoppingBag },
   ];
 
-  if (profile?.is_host) {
-    navigation.splice(2, 0, { name: 'Availability', href: '/availability', icon: Calendar });
-  }
-
   // Poll for unread notifications
   useEffect(() => {
     if (!profile?.id) {
@@ -228,6 +224,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     <User className="w-4 h-4 mr-2" />
                     My Profile
                   </DropdownMenuItem>
+                  {profile?.is_host && (
+                    <DropdownMenuItem onClick={() => router.push('/availability')}>
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Availability
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => router.push('/coupons')}>
                     <Ticket className="w-4 h-4 mr-2" />
                     My Coupons
@@ -315,6 +317,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <User className="w-4 h-4 mr-2" />
                 My Profile
               </Button>
+              {profile?.is_host && (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    router.push('/availability');
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Availability
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 className="w-full justify-start"
