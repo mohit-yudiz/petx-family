@@ -105,6 +105,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     <User className="w-4 h-4 mr-2" />
                     My Profile
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/reviews')}>
+                    <User className="w-4 h-4 mr-2" />
+                    Reviews
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push('/settings')}>
                     <Settings className="w-4 h-4 mr-2" />
                     Settings

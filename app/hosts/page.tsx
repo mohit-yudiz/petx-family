@@ -108,6 +108,18 @@ function HostsContent() {
       );
     }
 
+    // Distance/Location filter
+    if (filterDistance !== 'all' && profile) {
+      filtered = filtered.filter((host) => {
+        if (filterDistance === 'same_area') {
+          return host.city === profile.city && host.area === profile.area;
+        } else if (filterDistance === 'same_city') {
+          return host.city === profile.city;
+        }
+        return true;
+      });
+    }
+
     setFilteredHosts(filtered);
   };
 
@@ -211,13 +223,12 @@ function HostsContent() {
 
               <Select value={filterDistance} onValueChange={setFilterDistance}>
                 <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Distance" />
+                  <SelectValue placeholder="Location" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Any Distance</SelectItem>
-                  <SelectItem value="5">Within 5 km</SelectItem>
-                  <SelectItem value="10">Within 10 km</SelectItem>
-                  <SelectItem value="20">Within 20 km</SelectItem>
+                  <SelectItem value="all">All Locations</SelectItem>
+                  <SelectItem value="same_city">Same City</SelectItem>
+                  <SelectItem value="same_area">Same Area</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -233,7 +244,11 @@ function HostsContent() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredHosts.map((host) => (
-              <Card key={host.id} className="hover:shadow-xl transition-shadow">
+              <Card 
+                key={host.id} 
+                className="hover:shadow-xl transition-shadow cursor-pointer"
+                onClick={() => router.push(`/profile/${host.id}`)}
+              >
                 <CardContent className="pt-6">
                   <div className="flex items-start space-x-4 mb-4">
                     <Avatar className="w-16 h-16">
@@ -292,7 +307,10 @@ function HostsContent() {
 
                   <Button
                     className="w-full bg-orange-500 hover:bg-orange-600"
-                    onClick={() => handleBookingRequest(host)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleBookingRequest(host);
+                    }}
                   >
                     <Calendar className="w-4 h-4 mr-2" />
                     Request Booking
