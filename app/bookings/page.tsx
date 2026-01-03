@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Calendar, MapPin, PawPrint, MessageCircle, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Calendar, MapPin, PawPrint, MessageCircle, CheckCircle, XCircle, Clock, Star } from 'lucide-react';
 import { supabase, Booking, Profile, Pet } from '@/lib/supabase';
 
 type BookingWithDetails = Booking & {
@@ -40,6 +40,11 @@ function BookingsContent() {
   const [selectedBooking, setSelectedBooking] = useState<BookingWithDetails | null>(null);
   const [actionType, setActionType] = useState<'accept' | 'reject' | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [reviewBooking, setReviewBooking] = useState<BookingWithDetails | null>(null);
+  const [rating, setRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
 
   useEffect(() => {
     fetchBookings();
@@ -170,12 +175,60 @@ function BookingsContent() {
     }
   };
 
+  const handleReviewClick = (booking: BookingWithDetails) => {
+    setReviewBooking(booking);
+    setShowReviewDialog(true);
+    setRating(0);
+    setHoveredRating(0);
+    setReviewText('');
+  };
+
+  const submitReview = async () => {
+    if (!reviewBooking || rating === 0) {
+      toast.error('Please select a rating');
+      return;
+    }
+
+    if (!reviewText.trim()) {
+      toast.error('Please write a review');
+      return;
+    }
+
+    try {
+      // Determine who is being reviewed (host or owner)
+      const isReviewingHost = reviewBooking.owner_id === profile?.id;
+      const revieweeId = isReviewingHost ? reviewBooking.host_id : reviewBooking.owner_id;
+
+      const { error } = await supabase.from('reviews').insert({
+        booking_id: reviewBooking.id,
+        reviewer_id: profile!.id,
+        reviewee_id: revieweeId,
+        rating,
+        review_text: reviewText,
+      });
+
+      if (error) {
+        console.error('Review submission error:', error);
+        throw error;
+      }
+
+      toast.success('Review submitted successfully!');
+      setShowReviewDialog(false);
+      setRating(0);
+      setReviewText('');
+      setReviewBooking(null);
+    } catch (error) {
+      console.error('Review error:', error);
+      toast.error('Failed to submit review');
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'requested':
         return 'bg-yellow-100 text-yellow-800';
       case 'accepted':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800'; 
       case 'confirmed':
         return 'bg-green-100 text-green-800';
       case 'in_progress':
@@ -307,7 +360,7 @@ function BookingsContent() {
               size="sm"
               variant="outline"
               className="w-full"
-              onClick={() => router.push(`/bookings/${booking.id}/review`)}
+              onClick={() => handleReviewClick(booking)}
             >
               Leave a Review
             </Button>
@@ -448,6 +501,87 @@ function BookingsContent() {
               >
                 Cancel
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Review Dialog */}
+        <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Leave a Review</DialogTitle>
+              <DialogDescription>
+                Share your experience with {reviewBooking?.owner_id === profile?.id 
+                  ? reviewBooking?.host?.first_name 
+                  : reviewBooking?.owner?.first_name}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {/* Star Rating */}
+              <div className="space-y-2">
+                <Label>Rating *</Label>
+                <div className="flex items-center space-x-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRating(star)}
+                      onMouseEnter={() => setHoveredRating(star)}
+                      onMouseLeave={() => setHoveredRating(0)}
+                      className="transition-transform hover:scale-110 focus:outline-none"
+                    >
+                      <Star
+                        className={`w-8 h-8 ${
+                          star <= (hoveredRating || rating)
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                  {rating > 0 && (
+                    <span className="ml-2 text-sm text-gray-600">
+                      {rating} {rating === 1 ? 'star' : 'stars'}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Review Text */}
+              <div className="space-y-2">
+                <Label htmlFor="reviewText">Your Review *</Label>
+                <Textarea
+                  id="reviewText"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder="Tell us about your experience..."
+                  rows={4}
+                  className="resize-none"
+                />
+              </div>
+
+              {/* Buttons */}
+              <div className="flex space-x-2">
+                <Button
+                  onClick={submitReview}
+                  className="flex-1 bg-orange-500 hover:bg-orange-600"
+                  disabled={rating === 0 || !reviewText.trim()}
+                >
+                  Submit Review
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowReviewDialog(false);
+                    setRating(0);
+                    setReviewText('');
+                    setReviewBooking(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
