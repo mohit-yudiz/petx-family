@@ -27,6 +27,7 @@ import {
   Menu,
   X,
   DollarSign,
+  ShoppingBag,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { database } from '@/lib/database';
@@ -37,6 +38,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const navigation = [
@@ -45,6 +47,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { name: 'My Pets', href: '/pets', icon: PawPrint },
     { name: 'Bookings', href: '/bookings', icon: Calendar },
     { name: 'Messages', href: '/messages', icon: MessageCircle },
+    { name: 'Services', href: '/services', icon: ShoppingBag },
   ];
 
   if (profile?.is_host) {
@@ -113,6 +116,41 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, profile?.id]);
 
+  // Poll for unread messages
+  useEffect(() => {
+    const fetchUnreadMessages = async () => {
+      if (!profile?.id) {
+        setUnreadMessagesCount(0);
+        return;
+      }
+
+      try {
+        // Get all unread messages where the current user is the receiver
+        const { data, error } = await database
+          .from('messages')
+          .select('id')
+          .neq('sender_id', profile.id)
+          .eq('is_read', false);
+
+        if (error) {
+          console.error('Error fetching unread messages:', error);
+          return;
+        }
+
+        setUnreadMessagesCount(data?.length || 0);
+      } catch (error) {
+        console.error('Error fetching unread messages:', error);
+      }
+    };
+
+    fetchUnreadMessages();
+
+    // Poll every 15 seconds
+    const messageInterval = setInterval(fetchUnreadMessages, 15000);
+
+    return () => clearInterval(messageInterval);
+  }, [profile?.id]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -127,14 +165,20 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <div className="hidden md:flex space-x-1">
                 {navigation.map((item) => {
                   const isActive = pathname === item.href;
+                  const showMessagesBadge = item.name === 'Messages' && unreadMessagesCount > 0;
                   return (
                     <Link key={item.name} href={item.href}>
                       <Button
                         variant={isActive ? 'default' : 'ghost'}
-                        className={isActive ? 'bg-orange-500 hover:bg-orange-600' : ''}
+                        className={`${isActive ? 'bg-orange-500 hover:bg-orange-600' : ''} relative`}
                       >
                         <item.icon className="w-4 h-4 mr-2" />
                         {item.name}
+                        {showMessagesBadge && (
+                          <Badge className="ml-2 h-5 w-5 flex items-center justify-center p-0 bg-red-500 hover:bg-red-500 text-white text-xs rounded-full">
+                            {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
+                          </Badge>
+                        )}
                       </Button>
                     </Link>
                   );
