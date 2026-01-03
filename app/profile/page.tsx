@@ -70,44 +70,44 @@ function ProfileContent() {
   const [languages, setLanguages] = useState<string[]>(profile?.languages_spoken || []);
   const [newLanguage, setNewLanguage] = useState('');
 
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+  const { register, handleSubmit, formState: { errors }, setValue, reset, watch: watchGeneral } = useForm({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      firstName: profile?.first_name || '',
-      lastName: profile?.last_name || '',
-      phone: profile?.phone || '',
-      dateOfBirth: profile?.dob || '',
-      gender: profile?.gender || '',
-      city: profile?.city || '',
-      area: profile?.area || '',
-      bio: profile?.bio || '',
-      emergencyContactName: profile?.emergency_contact_name || '',
-      emergencyContactPhone: profile?.emergency_contact_phone || '',
+      firstName: '',
+      lastName: '',
+      phone: '',
+      dateOfBirth: '',
+      gender: '',
+      city: '',
+      area: '',
+      bio: '',
+      emergencyContactName: '',
+      emergencyContactPhone: '',
     },
   });
 
-  const { register: registerOwner, handleSubmit: handleOwnerSubmit, formState: { errors: ownerErrors }, setValue: setOwnerValue } = useForm({
+  const { register: registerOwner, handleSubmit: handleOwnerSubmit, formState: { errors: ownerErrors }, setValue: setOwnerValue, reset: resetOwner, watch: watchOwner } = useForm({
     resolver: zodResolver(ownerProfileSchema),
     defaultValues: {
-      travelFrequency: profile?.travel_frequency || '',
-      preferredHostType: profile?.preferred_host_type || '',
-      vetName: profile?.vet_name || '',
-      vetContact: profile?.vet_contact || '',
+      travelFrequency: '',
+      preferredHostType: '',
+      vetName: '',
+      vetContact: '',
     },
   });
 
-  const { register: registerHost, handleSubmit: handleHostSubmit, formState: { errors: hostErrors }, setValue: setHostValue, watch } = useForm({
+  const { register: registerHost, handleSubmit: handleHostSubmit, formState: { errors: hostErrors }, setValue: setHostValue, watch, reset: resetHost } = useForm({
     resolver: zodResolver(hostProfileSchema),
     defaultValues: {
-      hasOwnPets: profile?.has_own_pets || false,
-      numOfPets: profile?.num_of_pets || 0,
-      typesOfPets: profile?.types_of_pets?.join(', ') || '',
-      petExperienceYears: profile?.pet_experience_years || 0,
-      homeType: profile?.home_type || '',
-      hasOpenSpace: profile?.has_open_space || false,
-      hasChildren: profile?.has_children || false,
-      maxPetsCanHost: profile?.max_pets_can_host || 1,
-      providesDailyUpdates: profile?.provides_daily_updates || true,
+      hasOwnPets: false,
+      numOfPets: 0,
+      typesOfPets: '',
+      petExperienceYears: 0,
+      homeType: '',
+      hasOpenSpace: false,
+      hasChildren: false,
+      maxPetsCanHost: 1,
+      providesDailyUpdates: true,
     },
   });
 
@@ -117,7 +117,42 @@ function ProfileContent() {
     setIsOwner(profile?.is_owner || false);
     setIsHost(profile?.is_host || false);
     setLanguages(profile?.languages_spoken || []);
-  }, [profile]);
+
+    // Reset form values when profile data is available
+    if (profile) {
+      reset({
+        firstName: profile.first_name || '',
+        lastName: profile.last_name || '',
+        phone: profile.phone || '',
+        dateOfBirth: profile.dob || '',
+        gender: profile.gender || '',
+        city: profile.city || '',
+        area: profile.area || '',
+        bio: profile.bio || '',
+        emergencyContactName: profile.emergency_contact_name || '',
+        emergencyContactPhone: profile.emergency_contact_phone || '',
+      });
+
+      resetOwner({
+        travelFrequency: profile.travel_frequency || '',
+        preferredHostType: profile.preferred_host_type || '',
+        vetName: profile.vet_name || '',
+        vetContact: profile.vet_contact || '',
+      });
+
+      resetHost({
+        hasOwnPets: profile.has_own_pets || false,
+        numOfPets: profile.num_of_pets || 0,
+        typesOfPets: profile.types_of_pets?.join(', ') || '',
+        petExperienceYears: profile.pet_experience_years || 0,
+        homeType: profile.home_type || '',
+        hasOpenSpace: profile.has_open_space || false,
+        hasChildren: profile.has_children || false,
+        maxPetsCanHost: profile.max_pets_can_host || 1,
+        providesDailyUpdates: profile.provides_daily_updates || true,
+      });
+    }
+  }, [profile, reset, resetOwner, resetHost]);
 
   const handleRoleToggle = async (role: 'owner' | 'host', value: boolean) => {
     setIsLoading(true);
@@ -355,7 +390,10 @@ function ProfileContent() {
 
                   <div className="space-y-2">
                     <Label htmlFor="gender">Gender</Label>
-                    <Select onValueChange={(value) => setValue('gender', value)}>
+                    <Select 
+                      value={watchGeneral('gender') || ''} 
+                      onValueChange={(value) => setValue('gender', value)}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
@@ -451,13 +489,16 @@ function ProfileContent() {
             <Card>
               <CardHeader>
                 <CardTitle>Pet Owner Details</CardTitle>
-                <CardDescription>Information for when you're looking for pet hosts</CardDescription>
+                <CardDescription>Information for when you&apos;re looking for pet hosts</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleOwnerSubmit(onSubmitOwner)} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="travelFrequency">Travel Frequency</Label>
-                    <Select onValueChange={(value) => setOwnerValue('travelFrequency', value)}>
+                    <Select 
+                      value={watchOwner('travelFrequency') || ''} 
+                      onValueChange={(value) => setOwnerValue('travelFrequency', value)}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="How often do you travel?" />
                       </SelectTrigger>
@@ -549,7 +590,10 @@ function ProfileContent() {
 
                   <div className="space-y-2">
                     <Label htmlFor="homeType">Home Type</Label>
-                    <Select onValueChange={(value) => setHostValue('homeType', value)}>
+                    <Select 
+                      value={watch('homeType') || ''} 
+                      onValueChange={(value) => setHostValue('homeType', value)}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select your home type" />
                       </SelectTrigger>
@@ -566,7 +610,7 @@ function ProfileContent() {
                     <Label htmlFor="hasOpenSpace">I have open space/yard</Label>
                     <Switch
                       id="hasOpenSpace"
-                      {...registerHost('hasOpenSpace')}
+                      checked={watch('hasOpenSpace')}
                       onCheckedChange={(checked) => setHostValue('hasOpenSpace', checked)}
                     />
                   </div>
@@ -575,7 +619,7 @@ function ProfileContent() {
                     <Label htmlFor="hasChildren">I have children at home</Label>
                     <Switch
                       id="hasChildren"
-                      {...registerHost('hasChildren')}
+                      checked={watch('hasChildren')}
                       onCheckedChange={(checked) => setHostValue('hasChildren', checked)}
                     />
                   </div>
