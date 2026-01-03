@@ -94,10 +94,24 @@ function MessagesContent() {
 
       if (error) throw error;
       setMessages(data as any || []);
+
+      // Mark all unread messages in this conversation as read
+      if (data && data.length > 0 && profile?.id) {
+        const unreadMessageIds = data
+          .filter((msg: any) => msg.receiver_id === profile.id && msg.read_at === null)
+          .map((msg: any) => msg.id);
+
+        if (unreadMessageIds.length > 0) {
+          await supabase
+            .from('messages')
+            .update({ read_at: new Date().toISOString() })
+            .in('id', unreadMessageIds);
+        }
+      }
     } catch (error) {
       toast.error('Failed to load messages');
     }
-  }, [selectedBookingId]);
+  }, [selectedBookingId, profile?.id]);
 
   useEffect(() => {
     fetchConversations();

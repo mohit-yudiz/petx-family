@@ -47,7 +47,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { name: 'My Pets', href: '/pets', icon: PawPrint },
     { name: 'Bookings', href: '/bookings', icon: Calendar },
     { name: 'Messages', href: '/messages', icon: MessageCircle },
-    { name: 'Services', href: '/services', icon: ShoppingBag },
+    { name: 'Stores', href: '/services', icon: ShoppingBag },
   ];
 
   if (profile?.is_host) {
@@ -125,12 +125,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        // Get all unread messages where the current user is the receiver
+        // Get all unread messages where the current user is the receiver and read_at is null
         const { data, error } = await database
           .from('messages')
           .select('id')
-          .neq('sender_id', profile.id)
-          .eq('is_read', false);
+          .eq('receiver_id', profile.id)
+          .is('read_at', null);
 
         if (error) {
           console.error('Error fetching unread messages:', error);
