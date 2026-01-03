@@ -16,17 +16,21 @@ After deploying, immediately add these environment variables in your Netlify Das
 
 1. Go to: **Site Settings** → **Environment Variables** → **Add a variable**
 
-2. Add these two variables:
+2. Add these two variables (copy the exact values below):
 
+   **Variable 1:**
    ```
-   Variable name: NEXT_PUBLIC_SUPABASE_URL
-   Value: [Your Supabase Project URL]
+   Name: NEXT_PUBLIC_SUPABASE_URL
+   Value: https://bdkuxrkbtapdxqxtxjej.supabase.co
    ```
 
+   **Variable 2:**
    ```
-   Variable name: NEXT_PUBLIC_SUPABASE_ANON_KEY
-   Value: [Your Supabase Anon Key]
+   Name: NEXT_PUBLIC_SUPABASE_ANON_KEY
+   Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJka3V4cmtidGFwZHhxeHR4amVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MDQ0MDcsImV4cCI6MjA4Mjk4MDQwN30.iQ8g7zKv9kLi6Z9vJfVBzHPhlrl5yAWM1rAvso1b_nk
    ```
+
+   **IMPORTANT**: Make sure to click **"Add variable"** after entering each one, then click **"Save"** at the bottom.
 
 ### 3. Get Your Supabase Credentials
 

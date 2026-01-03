@@ -54,6 +54,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, userData: any) => {
     const { data, error } = await authService.signUp(email, password, userData);
     if (!error && data?.user) {
+      const newProfile = {
+        user_id: data.user.id,
+        email: userData.email,
+        phone: userData.phone,
+        first_name: userData.firstName,
+        last_name: userData.lastName,
+        city: '',
+        area: '',
+        active_role: 'owner' as const,
+        is_owner: true,
+        is_host: false,
+        has_own_pets: false,
+        num_of_pets: 0,
+        max_pets_can_host: 0,
+        has_open_space: false,
+        has_children: false,
+        provides_daily_updates: false,
+        email_verified: true,
+        phone_verified: true,
+        profile_complete: false,
+      };
+
+      const { error: profileError } = await database
+        .from('profiles')
+        .insert(newProfile);
+
+      if (profileError) {
+        return { error: profileError };
+      }
+
       setUser(data.user as User);
       await fetchProfile(data.user.id);
     }
@@ -61,6 +91,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signIn = async (identifier: string, password: string) => {
+    // If identifier is a phone number, look up the user_id from Supabase first
+    if (!identifier.includes('@')) {
+      const { data: profileData } = await database
+        .from('profiles')
+        .select('user_id, email')
+        .eq('phone', identifier)
+        .maybeSingle();
+
+      if (!profileData) {
+        return { error: { message: 'No user found with this phone number' } };
+      }
+
+      // Now sign in with the email
+      const { data, error } = await authService.signIn(profileData.email, password);
+      if (!error && data?.user) {
+        setUser(data.user as User);
+        await fetchProfile(data.user.id);
+      }
+      return { error };
+    }
+
+    // Email login
     const { data, error } = await authService.signIn(identifier, password);
     if (!error && data?.user) {
       setUser(data.user as User);
