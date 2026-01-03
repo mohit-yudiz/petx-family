@@ -48,9 +48,11 @@ function HostsContent() {
   });
 
   useEffect(() => {
-    fetchHosts();
+    if (profile?.id) {
+      fetchHosts();
+    }
     fetchPets();
-  }, []);
+  }, [profile?.id]);
 
   useEffect(() => {
     filterHosts();

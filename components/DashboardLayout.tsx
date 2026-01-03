@@ -94,9 +94,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       <p className="text-sm font-medium">
                         {profile?.first_name} {profile?.last_name}
                       </p>
-                      <Badge variant="outline" className="text-xs">
+                      {/* <Badge variant="outline" className="text-xs">
                         {profile?.active_role === 'both' ? 'Owner & Host' : profile?.active_role}
-                      </Badge>
+                      </Badge> */}
                     </div>
                   </Button>
                 </DropdownMenuTrigger>

@@ -328,7 +328,7 @@ function ProfileContent() {
               <Switch
                 checked={isOwner}
                 onCheckedChange={(checked) => handleRoleToggle('owner', checked)}
-                disabled={isLoading || (!isOwner && !isHost)}
+                disabled={isLoading}
               />
             </div>
             <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -339,7 +339,7 @@ function ProfileContent() {
               <Switch
                 checked={isHost}
                 onCheckedChange={(checked) => handleRoleToggle('host', checked)}
-                disabled={isLoading || (!isHost && !isOwner)}
+                disabled={isLoading}
               />
             </div>
           </CardContent>
