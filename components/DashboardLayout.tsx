@@ -27,13 +27,16 @@ import {
   Menu,
   X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { database } from '@/lib/database';
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, profile, signOut } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -46,6 +49,68 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   if (profile?.is_host) {
     navigation.splice(2, 0, { name: 'Availability', href: '/availability', icon: Calendar });
   }
+
+  // Poll for unread notifications
+  useEffect(() => {
+    if (!profile?.id) {
+      setUnreadCount(0);
+      return;
+    }
+
+    const fetchUnreadCount = async () => {
+      try {
+        const { data, error } = await database
+          .from('notifications')
+          .select('id')
+          .eq('user_id', profile.id)
+          .eq('is_read', false);
+
+        if (error) {
+          console.error('Error fetching unread notifications:', error);
+          return;
+        }
+
+        setUnreadCount(data?.length || 0);
+      } catch (error) {
+        console.error('Error fetching unread notifications:', error);
+      }
+    };
+
+    // Fetch immediately
+    fetchUnreadCount();
+
+    // Poll every 15 seconds
+    pollingIntervalRef.current = setInterval(fetchUnreadCount, 15000);
+
+    // Cleanup on unmount
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, [profile?.id]);
+
+  // Also fetch when navigating to notifications page
+  useEffect(() => {
+    if (pathname === '/notifications' && profile?.id) {
+      const fetchUnreadCount = async () => {
+        try {
+          const { data, error } = await database
+            .from('notifications')
+            .select('id')
+            .eq('user_id', profile.id)
+            .eq('is_read', false);
+
+          if (!error) {
+            setUnreadCount(data?.length || 0);
+          }
+        } catch (error) {
+          console.error('Error fetching unread notifications:', error);
+        }
+      };
+      fetchUnreadCount();
+    }
+  }, [pathname, profile?.id]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -77,8 +142,20 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" size="icon" onClick={() => router.push('/notifications')}>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => router.push('/notifications')}
+                className="relative"
+              >
                 <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <Badge 
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-orange-500 text-white text-xs rounded-full"
+                  >
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Badge>
+                )}
               </Button>
 
               <DropdownMenu>
@@ -155,6 +232,24 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   </Link>
                 );
               })}
+              <Button
+                variant="ghost"
+                className="w-full justify-start relative"
+                onClick={() => {
+                  router.push('/notifications');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <Bell className="w-4 h-4 mr-2" />
+                Notifications
+                {unreadCount > 0 && (
+                  <Badge 
+                    className="ml-auto h-5 w-5 flex items-center justify-center p-0 bg-orange-500 text-white text-xs rounded-full"
+                  >
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Badge>
+                )}
+              </Button>
               <Button
                 variant="ghost"
                 className="w-full justify-start"
