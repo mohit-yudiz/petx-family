@@ -137,7 +137,9 @@ function NotificationsContent() {
                 onClick={() => {
                   markAsRead(notification.id);
                   if (notification.booking_id) {
-                    router.push('/bookings');
+                    router.push(`/bookings?highlight=${notification.booking_id}`);
+                  } else if (notification.type === 'message') {
+                    router.push('/messages');
                   }
                 }}
               >
