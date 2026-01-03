@@ -38,18 +38,18 @@ export default function Home() {
               <span className="text-2xl font-bold text-gray-900">PetXfamily</span>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/about">
-                <Button variant="ghost">About</Button>
-              </Link>
-              <Link href="/how-it-works">
-                <Button variant="ghost">How It Works</Button>
-              </Link>
-              <Link href="/login">
-                <Button variant="outline">Sign In</Button>
-              </Link>
-              <Link href="/register">
-                <Button className="bg-orange-500 hover:bg-orange-600">Get Started</Button>
-              </Link>
+              <Button variant="ghost" asChild>
+                <Link href="/about">About</Link>
+              </Button>
+              <Button variant="ghost" asChild>
+                <Link href="/how-it-works">How It Works</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/login">Sign In</Link>
+              </Button>
+              <Button className="bg-orange-500 hover:bg-orange-600" asChild>
+                <Link href="/register">Get Started</Link>
+              </Button>
             </div>
           </div>
         </div>
