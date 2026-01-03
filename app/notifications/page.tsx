@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -136,7 +137,9 @@ function NotificationsContent() {
                 onClick={() => {
                   markAsRead(notification.id);
                   if (notification.booking_id) {
-                    router.push('/bookings');
+                    router.push(`/bookings?highlight=${notification.booking_id}`);
+                  } else if (notification.type === 'message') {
+                    router.push('/messages');
                   }
                 }}
               >

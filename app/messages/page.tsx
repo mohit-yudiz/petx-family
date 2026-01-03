@@ -273,17 +273,22 @@ function MessagesContent() {
                       >
                         <ArrowLeft className="w-5 h-5" />
                       </Button>
-                      <Avatar className="w-10 h-10 flex-shrink-0">
-                        <AvatarImage src={currentConv.other_user?.profile_photo || ''} />
-                        <AvatarFallback className="bg-orange-100 text-orange-600">
-                          {currentConv.other_user?.first_name?.[0]}{currentConv.other_user?.last_name?.[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate">
-                          {currentConv.other_user?.first_name} {currentConv.other_user?.last_name}
-                        </h3>
-                        <p className="text-xs text-gray-500">Active now</p>
+                      <div
+                        onClick={() => router.push(`/profile/${currentConv.other_user?.id}`)}
+                        className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded-lg transition-colors"
+                      >
+                        <Avatar className="w-10 h-10 flex-shrink-0">
+                          <AvatarImage src={currentConv.other_user?.profile_photo || ''} />
+                          <AvatarFallback className="bg-orange-100 text-orange-600">
+                            {currentConv.other_user?.first_name?.[0]}{currentConv.other_user?.last_name?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 truncate">
+                            {currentConv.other_user?.first_name} {currentConv.other_user?.last_name}
+                          </h3>
+                          <p className="text-xs text-gray-500">Active now</p>
+                        </div>
                       </div>
                     </div>
                   ) : null;
