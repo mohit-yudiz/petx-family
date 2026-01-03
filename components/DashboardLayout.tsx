@@ -26,6 +26,7 @@ import {
   LogOut,
   Menu,
   X,
+  DollarSign,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { database } from '@/lib/database';
@@ -186,6 +187,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     <User className="w-4 h-4 mr-2" />
                     Reviews
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/price')}>
+                    <DollarSign className="w-4 h-4 mr-2" />
+                    Price
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push('/settings')}>
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
@@ -260,6 +265,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               >
                 <User className="w-4 h-4 mr-2" />
                 My Profile
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => {
+                  router.push('/price');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <DollarSign className="w-4 h-4 mr-2" />
+                Price
               </Button>
               <Button
                 variant="ghost"
