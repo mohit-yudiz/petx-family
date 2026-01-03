@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -53,10 +54,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-8">
               <Link href="/dashboard" className="flex items-center space-x-2">
-                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                  <PawPrint className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-2xl font-bold text-gray-900">PetStay</span>
+                <Image src="/icon.png" alt="PetXfamily" width={40} height={40} className="w-10 h-10" />
+                <span className="text-2xl font-bold text-gray-900">PetXfamily</span>
               </Link>
 
               <div className="hidden md:flex space-x-1">

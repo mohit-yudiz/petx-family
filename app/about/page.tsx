@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { PawPrint, Heart, Shield, Users } from 'lucide-react';
 
@@ -9,10 +10,8 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                <PawPrint className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-900">PetStay</span>
+              <Image src="/icon.png" alt="PetXfamily" width={40} height={40} className="w-10 h-10" />
+              <span className="text-2xl font-bold text-gray-900">PetXfamily</span>
             </Link>
             <div className="flex items-center space-x-4">
               <Link href="/"><Button variant="ghost">Home</Button></Link>
@@ -24,7 +23,7 @@ export default function AboutPage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">About PetStay</h1>
+          <h1 className="text-5xl font-bold text-gray-900 mb-6">About PetXfamily</h1>
           <p className="text-xl text-gray-600">
             Connecting pet owners with loving hosts for stress-free pet care
           </p>
@@ -33,11 +32,11 @@ export default function AboutPage() {
         <div className="prose prose-lg max-w-none">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Mission</h2>
           <p className="text-gray-600 mb-8">
-            At PetStay, we believe that every pet deserves a comfortable, loving home environment when their owners travel.
+            At PetXfamily, we believe that every pet deserves a comfortable, loving home environment when their owners travel.
             We connect responsible pet owners with verified hosts who provide cage-free, home-based pet care.
           </p>
 
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Why PetStay?</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Why PetXfamily?</h2>
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="p-6 bg-white rounded-lg shadow-md">
               <Heart className="w-8 h-8 text-orange-500 mb-3" />
@@ -71,13 +70,13 @@ export default function AboutPage() {
 
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Story</h2>
           <p className="text-gray-600 mb-8">
-            PetStay was founded by pet lovers who experienced the stress of finding reliable, loving care for their pets
+            PetXfamily was founded by pet lovers who experienced the stress of finding reliable, loving care for their pets
             while traveling. We created a platform that brings together a community of responsible pet owners and caring hosts
             who understand the importance of providing a safe, comfortable environment for pets.
           </p>
 
           <div className="bg-orange-50 rounded-lg p-8 text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Join PetStay?</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Join PetXfamily?</h3>
             <p className="text-gray-600 mb-6">
               Whether you're looking for a host or want to become one, we'd love to have you in our community.
             </p>

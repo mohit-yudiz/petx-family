@@ -1,7 +1,7 @@
 # PetStay - Pet Hospitality Platform
 
 A production-ready, scalable Peer-to-Peer Pet Hospitality web application connecting pet owners with verified pet hosts for safe, home-like pet stays.
-
+ 
 ## Features
 
 ### For Pet Owners

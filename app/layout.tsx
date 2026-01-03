@@ -7,12 +7,15 @@ import { Toaster } from '@/components/ui/sonner';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'PetStay - Pet Hospitality Platform',
+  title: 'PetXfamily - Pet Hospitality Platform',
   description: 'Connect with verified pet hosts for a safe, home-like stay for your pets when you travel',
+  icons: {
+    icon: '/icon.png',
+  },
   openGraph: {
     images: [
       {
-        url: 'https://bolt.new/static/og_default.png',
+        url: '/icon.png',
       },
     ],
   },
@@ -20,7 +23,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     images: [
       {
-        url: 'https://bolt.new/static/og_default.png',
+        url: '/icon.png',
       },
     ],
   },

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Home as HomeIcon, Search, MessageCircle, Star, Shield, Heart, PawPrint } from 'lucide-react';
@@ -33,10 +34,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                <PawPrint className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-900">PetStay</span>
+              <Image src="/icon.png" alt="PetXfamily" width={40} height={40} className="w-10 h-10" />
+              <span className="text-2xl font-bold text-gray-900">PetXfamily</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/about">
@@ -99,7 +98,7 @@ export default function Home() {
       <section className="bg-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">How PetStay Works</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">How PetXfamily Works</h2>
             <p className="text-xl text-gray-600">Simple, safe, and stress-free pet care</p>
           </div>
 
@@ -156,10 +155,8 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                  <PawPrint className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold">PetStay</span>
+                <Image src="/icon.png" alt="PetXfamily" width={32} height={32} className="w-8 h-8" />
+                <span className="text-xl font-bold">PetXfamily</span>
               </div>
               <p className="text-gray-400">
                 Safe, loving pet care in a home environment
@@ -189,7 +186,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 PetStay. All rights reserved.</p>
+            <p>&copy; 2024 PetXfamily. All rights reserved.</p>
           </div>
         </div>
       </footer>
