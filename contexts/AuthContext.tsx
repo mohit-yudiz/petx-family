@@ -1,9 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, authService } from '@/lib/auth';
 import { database, Profile } from '@/lib/database';
 import { useRouter } from 'next/navigation';
+import type { Session } from '@supabase/supabase-js';
 
 type AuthContextType = {
   user: User | null;
@@ -24,42 +25,102 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    initAuth();
+  const fetchProfile = useCallback(async (userId: string) => {
+    try {
+      const { data, error } = await database
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+
+      if (data) {
+        setProfile(data as Profile);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
   }, []);
 
-  const initAuth = async () => {
-    const session = await authService.getSession();
-    const currentUser = session.data.session?.user;
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const session = await authService.getSession();
+        const currentUser = session.data.session?.user;
 
-    if (currentUser) {
-      setUser(currentUser as User);
-      await fetchProfile(currentUser.id);
-    }
-    setLoading(false);
-  };
+        if (currentUser) {
+          setUser(currentUser);
+          await fetchProfile(currentUser.id);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchProfile = async (userId: string) => {
-    const { data, error } = await database
-      .from('profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
+    initAuth();
 
-    if (data) {
-      setProfile(data as Profile);
-    }
-  };
+    // Listen to auth state changes
+    const subscription = authService.onAuthStateChange(
+      async (event, session: Session | null) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          const currentUser = {
+            id: session.user.id,
+            email: session.user.email || '',
+            created_at: session.user.created_at,
+            phone: session.user.phone,
+            email_confirmed_at: session.user.email_confirmed_at,
+            phone_confirmed_at: session.user.phone_confirmed_at,
+          };
+          setUser(currentUser);
+          await fetchProfile(currentUser.id);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setProfile(null);
+        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+          const currentUser = {
+            id: session.user.id,
+            email: session.user.email || '',
+            created_at: session.user.created_at,
+            phone: session.user.phone,
+            email_confirmed_at: session.user.email_confirmed_at,
+            phone_confirmed_at: session.user.phone_confirmed_at,
+          };
+          setUser(currentUser);
+        }
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      subscription.data.subscription.unsubscribe();
+    };
+  }, [fetchProfile]);
 
   const signUp = async (email: string, password: string, userData: any) => {
-    const { data, error } = await authService.signUp(email, password, userData);
-    if (!error && data?.user) {
+    try {
+      const { data, error } = await authService.signUp(email, password, userData);
+      
+      if (error) {
+        return { error };
+      }
+
+      if (!data?.user) {
+        return { error: { message: 'Failed to create user' } };
+      }
+
+      // Create profile in database
       const newProfile = {
         user_id: data.user.id,
-        email: userData.email,
-        phone: userData.phone,
-        first_name: userData.firstName,
-        last_name: userData.lastName,
+        email: userData.email || email,
+        phone: userData.phone || null,
+        first_name: userData.firstName || '',
+        last_name: userData.lastName || '',
         city: '',
         area: '',
         active_role: 'owner' as const,
@@ -71,8 +132,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         has_open_space: false,
         has_children: false,
         provides_daily_updates: false,
-        email_verified: true,
-        phone_verified: true,
+        email_verified: data.user.email_confirmed_at ? true : false,
+        phone_verified: data.user.phone_confirmed_at ? true : false,
         profile_complete: false,
       };
 
@@ -81,66 +142,92 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .insert(newProfile);
 
       if (profileError) {
+        console.error('Error creating profile:', profileError);
         return { error: profileError };
       }
 
-      setUser(data.user as User);
+      setUser(data.user);
       await fetchProfile(data.user.id);
+      
+      return { error: null };
+    } catch (err: any) {
+      return { error: { message: err.message || 'An error occurred during sign up' } };
     }
-    return { error };
   };
 
   const signIn = async (identifier: string, password: string) => {
-    // If identifier is a phone number, look up the user_id from Supabase first
-    if (!identifier.includes('@')) {
-      const { data: profileData } = await database
-        .from('profiles')
-        .select('user_id, email')
-        .eq('phone', identifier)
-        .maybeSingle();
+    try {
+      let email = identifier;
 
-      if (!profileData) {
-        return { error: { message: 'No user found with this phone number' } };
+      // If identifier is a phone number, look up the email from profiles table
+      if (!identifier.includes('@')) {
+        const { data: profileData, error: profileError } = await database
+          .from('profiles')
+          .select('user_id, email')
+          .eq('phone', identifier)
+          .maybeSingle();
+
+        if (profileError || !profileData) {
+          return { error: { message: 'No user found with this phone number' } };
+        }
+
+        email = profileData.email;
       }
 
-      // Now sign in with the email
-      const { data, error } = await authService.signIn(profileData.email, password);
-      if (!error && data?.user) {
-        setUser(data.user as User);
-        await fetchProfile(data.user.id);
+      // Sign in with Supabase Auth using email
+      const { data, error } = await authService.signIn(email, password);
+      
+      if (error) {
+        return { error };
       }
-      return { error };
-    }
 
-    // Email login
-    const { data, error } = await authService.signIn(identifier, password);
-    if (!error && data?.user) {
-      setUser(data.user as User);
+      if (!data?.user) {
+        return { error: { message: 'Invalid credentials' } };
+      }
+
+      setUser(data.user);
       await fetchProfile(data.user.id);
+      
+      return { error: null };
+    } catch (err: any) {
+      return { error: { message: err.message || 'An error occurred during sign in' } };
     }
-    return { error };
   };
 
   const signOut = async () => {
-    await authService.signOut();
-    setUser(null);
-    setProfile(null);
-    router.push('/login');
+    try {
+      const { error } = await authService.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+      }
+      setUser(null);
+      setProfile(null);
+      router.push('/login');
+    } catch (err: any) {
+      console.error('Error signing out:', err);
+    }
   };
 
   const updateProfile = async (updates: Partial<Profile>) => {
-    if (!user) return { error: { message: 'No user logged in' } };
-
-    const { error } = await database
-      .from('profiles')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('user_id', user.id);
-
-    if (!error) {
-      await fetchProfile(user.id);
+    if (!user) {
+      return { error: { message: 'No user logged in' } };
     }
 
-    return { error };
+    try {
+      const { error } = await database
+        .from('profiles')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('user_id', user.id);
+
+      if (error) {
+        return { error };
+      }
+
+      await fetchProfile(user.id);
+      return { error: null };
+    } catch (err: any) {
+      return { error: { message: err.message || 'An error occurred while updating profile' } };
+    }
   };
 
   const refreshProfile = async () => {
