@@ -1,13 +1,13 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { PawPrint } from 'lucide-react';
 
 export default function FAQPage() {
   const faqs = [
     {
-      question: 'How does PetStay work?',
-      answer: 'PetStay connects pet owners with verified hosts. Browse hosts in your area, send a booking request with your pet details, and chat with the host. Once confirmed, drop off your pet and receive daily updates during their stay.'
+      question: 'How does PetXfamily work?',
+      answer: 'PetXfamily connects pet owners with verified hosts. Browse hosts in your area, send a booking request with your pet details, and chat with the host. Once confirmed, drop off your pet and receive daily updates during their stay.'
     },
     {
       question: 'Are hosts verified?',
@@ -27,7 +27,7 @@ export default function FAQPage() {
     },
     {
       question: 'How do payments work?',
-      answer: 'Payment features are coming soon. Currently, PetStay focuses on connecting the community. Payment arrangements can be made directly between owners and hosts.'
+      answer: 'Payment features are coming soon. Currently, PetXfamily focuses on connecting the community. Payment arrangements can be made directly between owners and hosts.'
     },
     {
       question: 'Can I cancel a booking?',
@@ -45,10 +45,8 @@ export default function FAQPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                <PawPrint className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-900">PetStay</span>
+              <Image src="/icon.png" alt="PetXfamily" width={40} height={40} className="w-10 h-10" />
+              <span className="text-2xl font-bold text-gray-900">PetXfamily</span>
             </Link>
             <div className="flex items-center space-x-4">
               <Link href="/"><Button variant="ghost">Home</Button></Link>
@@ -62,7 +60,7 @@ export default function FAQPage() {
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h1>
           <p className="text-xl text-gray-600">
-            Find answers to common questions about PetStay
+            Find answers to common questions about PetXfamily
           </p>
         </div>
 

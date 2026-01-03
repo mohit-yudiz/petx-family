@@ -1,7 +1,8 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { PawPrint, Search, MessageCircle, Calendar, Home, Star } from 'lucide-react';
+import { Search, MessageCircle, Calendar, Home, Star } from 'lucide-react';
 
 export default function HowItWorksPage() {
   return (
@@ -10,10 +11,8 @@ export default function HowItWorksPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                <PawPrint className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-900">PetStay</span>
+              <Image src="/icon.png" alt="PetXfamily" width={40} height={40} className="w-10 h-10" />
+              <span className="text-2xl font-bold text-gray-900">PetXfamily</span>
             </Link>
             <div className="flex items-center space-x-4">
               <Link href="/"><Button variant="ghost">Home</Button></Link>
@@ -25,7 +24,7 @@ export default function HowItWorksPage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">How PetStay Works</h1>
+          <h1 className="text-5xl font-bold text-gray-900 mb-6">How PetXfamily Works</h1>
           <p className="text-xl text-gray-600">
             Simple, safe, and stress-free pet care in three easy steps
           </p>
@@ -76,8 +75,8 @@ export default function HowItWorksPage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">For Pet Owners</h2>
           <div className="space-y-6">
             <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <PawPrint className="w-6 h-6 text-orange-500" />
+              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <Image src="/icon.png" alt="Pet" width={48} height={48} className="w-12 h-12" />
               </div>
               <div>
                 <h4 className="font-semibold text-lg mb-2">Create Pet Profiles</h4>

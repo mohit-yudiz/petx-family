@@ -282,7 +282,7 @@ function ProfileContent() {
         <Card>
           <CardHeader>
             <CardTitle>Account Roles</CardTitle>
-            <CardDescription>Choose how you want to use PetStay</CardDescription>
+            <CardDescription>Choose how you want to use PetXfamily</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between p-4 border rounded-lg">

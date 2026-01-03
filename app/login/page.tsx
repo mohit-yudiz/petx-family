@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { PawPrint } from 'lucide-react';
 
 const loginSchema = z.object({
   identifier: z.string().min(1, 'Email or phone is required'),
@@ -116,10 +116,10 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500 rounded-full mb-4">
-            <PawPrint className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <Image src="/icon.png" alt="PetXfamily" width={64} height={64} className="w-16 h-16" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Welcome to PetStay</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Welcome to PetXfamily</h1>
           <p className="text-gray-600 mt-2">Sign in to your account</p>
         </div>
 
