@@ -1,160 +1,169 @@
-// Local authentication service using localStorage
+// Supabase authentication service
 
-const STORAGE_KEYS = {
-  USERS: 'petstay_users',
-  CURRENT_USER: 'petstay_current_user',
-  PROFILES: 'petstay_profiles',
-};
-
-const mockStorage = typeof window !== 'undefined' ? window.localStorage : {
-  getItem: () => null,
-  setItem: () => {},
-  removeItem: () => {},
-  clear: () => {},
-  length: 0,
-  key: () => null,
-};
+import { getSupabaseClient } from './database';
+import type { User as SupabaseUser, Session, AuthError as SupabaseAuthError } from '@supabase/supabase-js';
 
 export type User = {
   id: string;
   email: string;
   created_at: string;
+  phone?: string;
+  email_confirmed_at?: string;
+  phone_confirmed_at?: string;
 };
 
 export type AuthError = {
   message: string;
 };
 
+// Helper to get Supabase client
+function getClient() {
+  return getSupabaseClient();
+}
+
+// Convert Supabase user to our User type
+function convertSupabaseUser(supabaseUser: SupabaseUser): User {
+  return {
+    id: supabaseUser.id,
+    email: supabaseUser.email || '',
+    created_at: supabaseUser.created_at,
+    phone: supabaseUser.phone,
+    email_confirmed_at: supabaseUser.email_confirmed_at,
+    phone_confirmed_at: supabaseUser.phone_confirmed_at,
+  };
+}
+
 export const authService = {
   signUp: async (email: string, password: string, userData: any) => {
-    const users = JSON.parse(mockStorage.getItem(STORAGE_KEYS.USERS) || '[]');
+    try {
+      const supabase = getClient();
+      
+      // Sign up with Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+            phone: userData.phone,
+          },
+        },
+      });
 
-    // Check if user already exists
-    const existingUser = users.find((u: any) => u.email === email || u.phone === userData.phone);
-    if (existingUser) {
+      if (error) {
+        return {
+          data: null,
+          error: { message: error.message } as AuthError,
+        };
+      }
+
+      if (!data.user) {
+        return {
+          data: null,
+          error: { message: 'Failed to create user' } as AuthError,
+        };
+      }
+
+      return {
+        data: { user: convertSupabaseUser(data.user), session: data.session },
+        error: null,
+      };
+    } catch (err: any) {
       return {
         data: null,
-        error: { message: 'User with this email or phone already exists' } as AuthError,
+        error: { message: err.message || 'An error occurred during sign up' } as AuthError,
       };
     }
-
-    // Create new user
-    const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const newUser: User = {
-      id: userId,
-      email,
-      created_at: new Date().toISOString(),
-    };
-
-    // Create profile
-    const profiles = JSON.parse(mockStorage.getItem(STORAGE_KEYS.PROFILES) || '[]');
-    const newProfile = {
-      id: `profile_${Date.now()}`,
-      user_id: userId,
-      email: userData.email,
-      phone: userData.phone,
-      first_name: userData.firstName,
-      last_name: userData.lastName,
-      profile_photo: null,
-      dob: null,
-      gender: null,
-      city: '',
-      area: '',
-      bio: null,
-      languages_spoken: null,
-      emergency_contact_name: null,
-      emergency_contact_phone: null,
-      active_role: 'owner',
-      is_owner: true,
-      is_host: false,
-      travel_frequency: null,
-      preferred_host_type: null,
-      vet_name: null,
-      vet_contact: null,
-      has_own_pets: false,
-      num_of_pets: 0,
-      types_of_pets: null,
-      pet_experience_years: null,
-      home_type: null,
-      has_open_space: false,
-      has_children: false,
-      max_pets_can_host: 0,
-      provides_daily_updates: false,
-      email_verified: true,
-      phone_verified: true,
-      profile_complete: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    // Save user with password (in real app, hash the password!)
-    users.push({ ...newUser, password });
-    mockStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-
-    // Save profile
-    profiles.push(newProfile);
-    mockStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(profiles));
-
-    // Set current user
-    mockStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(newUser));
-
-    return {
-      data: { user: newUser },
-      error: null,
-    };
   },
 
-  signIn: async (identifier: string, password: string) => {
-    const users = JSON.parse(mockStorage.getItem(STORAGE_KEYS.USERS) || '[]');
-    const profiles = JSON.parse(mockStorage.getItem(STORAGE_KEYS.PROFILES) || '[]');
+  signIn: async (email: string, password: string) => {
+    try {
+      const supabase = getClient();
+      
+      // Sign in with Supabase Auth
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    // Check if identifier is email or phone
-    let user;
-    if (identifier.includes('@')) {
-      user = users.find((u: any) => u.email === identifier && u.password === password);
-    } else {
-      const profile = profiles.find((p: any) => p.phone === identifier);
-      if (profile) {
-        user = users.find((u: any) => u.id === profile.user_id && u.password === password);
+      if (error) {
+        return {
+          data: null,
+          error: { message: error.message } as AuthError,
+        };
       }
-    }
 
-    if (!user) {
+      if (!data.user) {
+        return {
+          data: null,
+          error: { message: 'Invalid credentials' } as AuthError,
+        };
+      }
+
+      return {
+        data: { user: convertSupabaseUser(data.user), session: data.session },
+        error: null,
+      };
+    } catch (err: any) {
       return {
         data: null,
-        error: { message: 'Invalid credentials' } as AuthError,
+        error: { message: err.message || 'An error occurred during sign in' } as AuthError,
       };
     }
-
-    // Set current user
-    const { password: _, ...userWithoutPassword } = user;
-    mockStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(userWithoutPassword));
-
-    return {
-      data: { user: userWithoutPassword },
-      error: null,
-    };
   },
 
   getSession: async () => {
-    const userStr = mockStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-    if (!userStr) {
-      return { data: { session: null }, error: null };
-    }
-
     try {
-      const user = JSON.parse(userStr);
+      const supabase = getClient();
+      
+      // Get current session from Supabase
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error) {
+        return { data: { session: null }, error };
+      }
+
+      if (!data.session || !data.session.user) {
+        return { data: { session: null }, error: null };
+      }
+
       return {
-        data: { session: { user } },
+        data: {
+          session: {
+            user: convertSupabaseUser(data.session.user),
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+          },
+        },
         error: null,
       };
-    } catch {
-      return { data: { session: null }, error: null };
+    } catch (err: any) {
+      return {
+        data: { session: null },
+        error: { message: err.message || 'Failed to get session' },
+      };
     }
   },
 
   signOut: async () => {
-    mockStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-    return { error: null };
+    try {
+      const supabase = getClient();
+      const { error } = await supabase.auth.signOut();
+      return { error };
+    } catch (err: any) {
+      return {
+        error: { message: err.message || 'An error occurred during sign out' },
+      };
+    }
+  },
+
+  // Listen to auth state changes
+  onAuthStateChange: (callback: (event: string, session: Session | null) => void) => {
+    const supabase = getClient();
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      callback(event, session);
+    });
+    return { data };
   },
 };
