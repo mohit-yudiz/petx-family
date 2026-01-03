@@ -175,4 +175,3 @@ For support, please contact support@petstay.com or visit our [Contact Page](/con
 - UI components from [Shadcn/UI](https://ui.shadcn.com/)
 - Database and auth by [Supabase](https://supabase.com/)
 - Hosted on [Netlify](https://www.netlify.com/)
-# petx-family
